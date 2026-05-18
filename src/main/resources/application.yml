@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -11,11 +11,6 @@ spring:
     url: jdbc:mysql://localhost:3306/bookstore?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
     password:
-
-  mvc:
-    view:
-      prefix: /WEB-INF/views/
-      suffix: .jsp
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
