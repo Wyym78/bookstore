@@ -91,47 +91,47 @@
 
 ---
 
-### 阶段五：Service 业务层
+### 阶段五：Service 业务层 ✅
 
 #### Service 接口 + 实现类
 
-- [ ] UserService + UserServiceImpl
-  - [ ] 注册
-  - [ ] 登录
-  - [ ] 获取当前用户信息
-  - [ ] 修改密码
-  - [ ] 修改个人信息
+- [x] UserService + UserServiceImpl
+  - [x] 注册
+  - [x] 登录
+  - [x] 获取当前用户信息
+  - [x] 修改密码
+  - [x] 修改个人信息
 
-- [ ] BookService + BookServiceImpl
-  - [ ] 分页查询书籍
-  - [ ] 按分类查询
-  - [ ] 搜索书籍
-  - [ ] 获取书籍详情
+- [x] BookService + BookServiceImpl
+  - [x] 分页查询书籍
+  - [x] 按分类查询
+  - [x] 搜索书籍
+  - [x] 获取书籍详情
 
-- [ ] CategoryService + CategoryServiceImpl
-  - [ ] 获取全部分类
-  - [ ] 按父级分类查询
-  - [ ] 分类增删改查
+- [x] CategoryService + CategoryServiceImpl
+  - [x] 获取全部分类
+  - [x] 按父级分类查询
+  - [x] 分类增删改查
 
-- [ ] CartService + CartServiceImpl
-  - [ ] 加入购物车
-  - [ ] 修改数量
-  - [ ] 删除购物车商品
-  - [ ] 获取购物车列表
-  - [ ] 清空购物车
+- [x] CartService + CartServiceImpl
+  - [x] 加入购物车
+  - [x] 修改数量
+  - [x] 删除购物车商品
+  - [x] 获取购物车列表
+  - [x] 清空购物车
 
-- [ ] OrderService + OrderServiceImpl
-  - [ ] 创建订单
-  - [ ] 支付订单
-  - [ ] 取消订单
-  - [ ] 确认收货
-  - [ ] 获取订单列表
-  - [ ] 获取订单详情
+- [x] OrderService + OrderServiceImpl
+  - [x] 创建订单
+  - [x] 支付订单
+  - [x] 取消订单
+  - [x] 确认收货
+  - [x] 获取订单列表
+  - [x] 获取订单详情
 
-- [ ] ReviewService + ReviewServiceImpl
-  - [ ] 发表评论
-  - [ ] 获取书籍评论
-  - [ ] 删除评论
+- [x] ReviewService + ReviewServiceImpl
+  - [x] 发表评论
+  - [x] 获取书籍评论
+  - [x] 删除评论
 
 ---
 
@@ -220,3 +220,4 @@
 | 2026/5/18 | 8586ded | feat: 添加8个Entity实体类 |
 | 2026/5/18 | a8ec09c | feat: 添加8个Mapper接口 |
 | 2026/5/18 | dde801c | feat: 添加DTO和VO数据传输对象 |
+| 2026/5/18 | xxxxxxx | feat: 完成Service业务层（6个Service接口+实现类） |
