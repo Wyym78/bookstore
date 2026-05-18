@@ -52,38 +52,16 @@
 
 ---
 
-### 阶段三：Mapper 数据访问层 ⏳
+### 阶段三：Mapper 数据访问层 ✅
 
-- [ ] UserMapper.java
-  - [ ] findByUsername
-  - [ ] findByEmail
-  - [ ] findByPhone
-
-- [ ] CategoryMapper.java
-  - [ ] findByParentId
-  - [ ] findAll
-
-- [ ] BookMapper.java
-  - [ ] findByIsbn
-  - [ ] findByCategoryId
-  - [ ] search
-
-- [ ] AddressMapper.java
-  - [ ] findByUserId
-  - [ ] findDefault
-
-- [ ] CartMapper.java
-  - [ ] findByUserId
-  - [ ] findByUserIdAndBookId
-
-- [ ] OrderMapper.java
-  - [ ] findByOrderNo
-  - [ ] findByUserId
-  - [ ] findByStatus
-
-- [ ] ReviewMapper.java
-  - [ ] findByBookId
-  - [ ] findByUserId
+- [x] UserMapper.java
+- [x] CategoryMapper.java
+- [x] BookMapper.java
+- [x] AddressMapper.java
+- [x] CartMapper.java
+- [x] OrderMapper.java
+- [x] OrderItemMapper.java
+- [x] ReviewMapper.java
 
 ---
 
@@ -240,3 +218,4 @@
 |------|--------|------|
 | 2026/5/18 | 5fa3e83 | feat: 完成基础框架搭建 |
 | 2026/5/18 | 8586ded | feat: 添加8个Entity实体类 |
+| 2026/5/18 | a8ec09c | feat: 添加8个Mapper接口 |
