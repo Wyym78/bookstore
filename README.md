@@ -8,7 +8,7 @@
 |------|------|
 | 后端 | Java 17, Spring Boot 3.2.5, MyBatis-Plus 3.5.6 |
 | 数据库 | MySQL 8.0, Druid 1.2.23 |
-| 前端 | Layui 2.8.x, JSP |
+| 前端 | Vue 3 + Vite |
 | 构建 | Maven |
 
 ## 功能模块

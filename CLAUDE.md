@@ -11,8 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - MyBatis-Plus 3.5.6（ORM框架）
 - MySQL 8.0（数据库）
 - Druid 1.2.23（连接池）
-- Layui 2.8.x（前端UI框架）
-- JSP（视图层）
+- Vue 3 + Vite（前端框架）
+- Java 17 / Spring Boot 3.2.5
 
 ## 常用命令
 
@@ -76,10 +76,10 @@ com.example.bookstore/
 ### 配置文件
 
 主配置位于 `src/main/resources/application.yml`：
-- 服务端口：**8080**
+- 后端服务端口：**8080**（API服务）
 - 数据库：**localhost:3306/bookstore**
-- JSP视图：`/WEB-INF/views/` 前缀，`.jsp` 后缀
 - MyBatis-Plus XML映射：`classpath:mapper/*.xml`
+- CORS已配置允许前端开发服务器（如 localhost:5173）访问
 
 ### 数据库表结构
 
@@ -96,12 +96,9 @@ com.example.bookstore/
 
 ### 前端结构
 
-- **静态资源**：`src/main/webapp/static/`（CSS、JS、Layui）
-- **JSP视图**：`src/main/webapp/WEB-INF/views/`
-  - `user/` - 登录、注册、个人中心
-  - `book/` - 列表、详情、搜索
-  - `cart/`、`order/` - 购物流程
-  - `admin/` - 管理后台（书籍管理、订单管理、用户管理、评论管理）
+- **Vue 3 + Vite** 项目（独立前端工程）
+- 组件化开发，Vue Router 路由管理
+- Pinia 状态管理（如需要）
 
 ## 开发注意事项
 
