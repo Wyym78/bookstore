@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网上书店 - BookStore</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2E5B85 0%, #1a3a5c 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 16px;
+            transition: opacity 0.3s;
+        }
+        .nav a:hover {
+            opacity: 0.8;
+        }
+        .user-actions button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        .user-actions button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        /* Search Bar */
+        .search-bar {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .search-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-content input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        .search-content input:focus {
+            border-color: #2E5B85;
+        }
+        .search-content button {
+            background: #2E5B85;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 30px;
+        }
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        .sidebar h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .category-list {
+            list-style: none;
+        }
+        .category-list li {
+            padding: 10px 0;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .category-list li:hover {
+            color: #2E5B85;
+            padding-left: 10px;
+        }
+        .category-list li.active {
+            color: #2E5B85;
+            font-weight: bold;
+        }
+        /* Book Grid */
+        .book-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .book-cover {
+            height: 240px;
+            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 50px;
+        }
+        .book-info {
+            padding: 15px;
+        }
+        .book-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .book-author {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .book-price {
+            color: #e63946;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .book-price span {
+            font-size: 14px;
+        }
+        .btn-add-cart {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #2E5B85;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-add-cart:hover {
+            background: #1a3a5c;
+        }
+        /* Cart Preview */
+        .cart-preview {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        .cart-preview h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .cart-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .cart-item-cover {
+            width: 50px;
+            height: 65px;
+            background: #e8e8e8;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 20px;
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .cart-item-price {
+            color: #e63946;
+            font-size: 14px;
+        }
+        .cart-item-count {
+            color: #888;
+            font-size: 12px;
+        }
+        .cart-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .cart-total-price {
+            color: #e63946;
+            font-weight: bold;
+        }
+        .btn-checkout {
+            width: 100%;
+            padding: 12px;
+            background: #e63946;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-checkout:hover {
+            background: #c1121f;
+        }
+        /* Footer */
+        .footer {
+            background: #333;
+            color: #999;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+        /* Empty Cart */
+        .empty-cart {
+            text-align: center;
+            color: #888;
+            padding: 30px 0;
+        }
+        .empty-cart span {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">BookStore</div>
+            <nav class="nav">
+                <a href="#">首页</a>
+                <a href="#">图书</a>
+                <a href="#">新书</a>
+                <a href="#">特惠</a>
+            </nav>
+            <div class="user-actions">
+                <button>登录</button>
+                <button>注册</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <div class="search-content">
+            <input type="text" placeholder="搜索书名、作者、ISBN...">
+            <button>搜索</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Sidebar - Categories -->
+        <aside class="sidebar">
+            <h3>图书分类</h3>
+            <ul class="category-list">
+                <li class="active">全部图书</li>
+                <li>计算机技术</li>
+                <li>文学小说</li>
+                <li>经济管理</li>
+                <li>人文社科</li>
+                <li>艺术设计</li>
+                <li>生活百科</li>
+                <li>儿童绘本</li>
+            </ul>
+        </aside>
+
+        <!-- Book Grid -->
+        <section class="book-section">
+            <h2>热门图书</h2>
+            <div class="book-grid">
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">深入理解计算机系统</div>
+                        <div class="book-author">Randal E. Bryant</div>
+                        <div class="book-price"><span>¥</span>128.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">Java核心技术卷I</div>
+                        <div class="book-author"> Cay S. Horstmann</div>
+                        <div class="book-price"><span>¥</span>119.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">算法导论（第4版）</div>
+                        <div class="book-author">Thomas H. Cormen</div>
+                        <div class="book-price"><span>¥</span>99.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">Python编程：从入门到实践</div>
+                        <div class="book-author">Eric Matthes</div>
+                        <div class="book-price"><span>¥</span>75.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">Spring Boot实战</div>
+                        <div class="book-author">Craig Walls</div>
+                        <div class="book-price"><span>¥</span>79.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-cover">📚</div>
+                    <div class="book-info">
+                        <div class="book-title">Effective Java中文版</div>
+                        <div class="book-author">Joshua Bloch</div>
+                        <div class="book-price"><span>¥</span>99.00</div>
+                        <button class="btn-add-cart">加入购物车</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cart Preview -->
+        <aside class="cart-preview">
+            <h3>我的购物车</h3>
+            <div class="cart-item">
+                <div class="cart-item-cover">📚</div>
+                <div class="cart-item-info">
+                    <div class="cart-item-title">深入理解计算机系统</div>
+                    <div class="cart-item-price">¥128.00</div>
+                    <div class="cart-item-count">x1</div>
+                </div>
+            </div>
+            <div class="cart-item">
+                <div class="cart-item-cover">📚</div>
+                <div class="cart-item-info">
+                    <div class="cart-item-title">Java核心技术卷I</div>
+                    <div class="cart-item-price">¥119.00</div>
+                    <div class="cart-item-count">x1</div>
+                </div>
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>合计:</span>
+                    <span class="cart-total-price">¥247.00</span>
+                </div>
+                <button class="btn-checkout">去结算</button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>网上书店系统 - BookStore © 2026</p>
+        <p style="margin-top:10px;font-size:14px;">基于 Spring Boot + MyBatis-Plus + Vue 3 构建</p>
+    </footer>
+
+    <script>
+        // Simple interaction - add to cart
+        document.querySelectorAll('.btn-add-cart').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.textContent = '已添加 ✓';
+                this.style.background = '#28a745';
+                setTimeout(() => {
+                    this.textContent = '加入购物车';
+                    this.style.background = '#2E5B85';
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>
