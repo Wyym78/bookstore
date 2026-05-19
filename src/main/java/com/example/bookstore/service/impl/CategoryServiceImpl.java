@@ -32,8 +32,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryVO> findByParentId(Long parentId) {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
-        if (parentId == null) {
-            wrapper.isNull(Category::getParentId);
+        if (parentId == null || parentId == 0) {
+            wrapper.eq(Category::getParentId, 0);
         } else {
             wrapper.eq(Category::getParentId, parentId);
         }
