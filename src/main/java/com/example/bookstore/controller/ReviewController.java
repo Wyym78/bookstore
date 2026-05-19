@@ -29,6 +29,12 @@ public class ReviewController {
         return Result.success(reviews);
     }
 
+    @GetMapping("/my")
+    public Result<List<ReviewVO>> myReviews() {
+        List<ReviewVO> reviews = reviewService.getByUserId(AuthContext.getCurrentUserId());
+        return Result.success(reviews);
+    }
+
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         reviewService.delete(AuthContext.getCurrentUserId(), id);

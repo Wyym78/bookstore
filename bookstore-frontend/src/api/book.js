@@ -1,0 +1,16 @@
+import api from './index'
+
+export const bookApi = {
+  getList(params) {
+    return api.get('/book/list', { params })
+  },
+  getDetail(id) {
+    return api.get(`/book/${id}`)
+  },
+  search(params) {
+    return api.get('/book/search', { params })
+  },
+  getByCategory(categoryId, params) {
+    return api.get(`/book/category/${categoryId}`, { params })
+  }
+}

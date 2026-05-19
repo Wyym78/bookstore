@@ -11,5 +11,7 @@ public interface ReviewService {
 
     List<ReviewVO> getByBookId(Long bookId);
 
+    List<ReviewVO> getByUserId(Long userId);
+
     void delete(Long userId, Long reviewId);
 }

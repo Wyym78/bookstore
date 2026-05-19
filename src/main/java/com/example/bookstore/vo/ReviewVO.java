@@ -20,4 +20,8 @@ public class ReviewVO {
     private String content;
 
     private LocalDateTime createTime;
+
+    private String bookTitle;
+
+    private String bookCoverUrl;
 }

@@ -64,6 +64,31 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public List<ReviewVO> getByUserId(Long userId) {
+        LambdaQueryWrapper<Review> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Review::getUserId, userId)
+                .orderByDesc(Review::getCreateTime);
+        List<Review> reviews = reviewMapper.selectList(wrapper);
+
+        return reviews.stream().map(review -> {
+            ReviewVO vo = new ReviewVO();
+            vo.setId(review.getId());
+            vo.setUserId(review.getUserId());
+            vo.setBookId(review.getBookId());
+            vo.setRating(review.getRating());
+            vo.setContent(review.getContent());
+            vo.setCreateTime(review.getCreateTime());
+
+            Book book = bookMapper.selectById(review.getBookId());
+            if (book != null) {
+                vo.setBookTitle(book.getTitle());
+                vo.setBookCoverUrl(book.getCoverUrl());
+            }
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
     public void delete(Long userId, Long reviewId) {
         Review review = reviewMapper.selectById(reviewId);
         if (review == null) {

@@ -1,6 +1,7 @@
 package com.example.bookstore.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.bookstore.common.Result;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.OrderItem;
@@ -59,5 +60,19 @@ public class BookManageController {
         book.setStatus(status);
         bookMapper.updateById(book);
         return Result.success();
+    }
+
+    @GetMapping("/list")
+    public Result<Page<Book>> list(@RequestParam(required = false) String keyword,
+                                    @RequestParam(defaultValue = "1") Integer pageNum,
+                                    @RequestParam(defaultValue = "10") Integer pageSize) {
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        if (keyword != null && !keyword.isBlank()) {
+            wrapper.like(Book::getTitle, keyword);
+        }
+        wrapper.orderByDesc(Book::getCreateTime);
+        Page<Book> page = new Page<>(pageNum, pageSize);
+        Page<Book> result = bookMapper.selectPage(page, wrapper);
+        return Result.success(result);
     }
 }

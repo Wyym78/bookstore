@@ -1,0 +1,749 @@
+<template>
+  <div class="order-detail-page">
+    <div class="page-container">
+      <h1 class="page-title">订单详情</h1>
+
+      <!-- 加载状态 -->
+      <div v-if="loading" class="detail-loading">
+        <div class="skeleton-section">
+          <div class="skeleton title"></div>
+          <div class="skeleton content"></div>
+        </div>
+      </div>
+
+      <div v-else-if="order" class="detail-content">
+        <!-- 订单状态进度 -->
+        <div class="section status-section">
+          <div class="status-progress">
+            <div
+              v-for="(step, index) in statusSteps"
+              :key="step.key"
+              class="progress-step"
+              :class="{
+                active: isStepActive(step.key),
+                completed: isStepCompleted(step.key)
+              }"
+            >
+              <div class="step-indicator">
+                <span v-if="isStepCompleted(step.key)" class="check-icon">✓</span>
+                <span v-else class="step-number">{{ index + 1 }}</span>
+              </div>
+              <div class="step-label">{{ step.label }}</div>
+              <div v-if="step.time" class="step-time">{{ step.time }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收货地址 -->
+        <div class="section address-section">
+          <h2 class="section-title">收货地址</h2>
+          <div class="address-card">
+            <div class="address-header">
+              <span class="receiver">{{ order.address?.receiver }}</span>
+              <span class="phone">{{ order.address?.phone }}</span>
+            </div>
+            <p class="address-detail">
+              {{ order.address?.province }}{{ order.address?.city }}{{ order.address?.district }}{{ order.address?.detail }}
+            </p>
+          </div>
+        </div>
+
+        <!-- 订单商品 -->
+        <div class="section items-section">
+          <h2 class="section-title">订单商品</h2>
+          <div class="order-items">
+            <div
+              v-for="item in order.items"
+              :key="item.id"
+              class="order-item"
+            >
+              <div class="item-cover">
+                <img :src="item.coverUrl || '/placeholder-book.png'" :alt="item.title" />
+              </div>
+              <div class="item-info">
+                <h4 class="item-title">{{ item.title }}</h4>
+                <p class="item-author">{{ item.author }}</p>
+              </div>
+              <div class="item-price">¥{{ item.price }}</div>
+              <div class="item-quantity">x{{ item.quantity }}</div>
+              <div class="item-subtotal">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 订单摘要 -->
+        <div class="section summary-section">
+          <h2 class="section-title">订单摘要</h2>
+          <div class="summary-content">
+            <div class="summary-row">
+              <span>订单编号</span>
+              <span class="order-no">{{ order.orderNo }}</span>
+            </div>
+            <div class="summary-row">
+              <span>下单时间</span>
+              <span>{{ formatDateTime(order.createTime) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>商品金额</span>
+              <span>¥{{ subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>运费</span>
+              <span>¥{{ shipping.toFixed(2) }}</span>
+            </div>
+            <div class="summary-row total">
+              <span>合计</span>
+              <span class="total-amount">¥{{ total.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 订单操作 -->
+        <div class="section actions-section">
+          <div class="actions-content">
+            <div class="actions-left">
+              <span v-if="order.status === 'pending'" class="pay-hint">
+                请在 <strong>24小时</strong> 内完成支付，逾期订单将自动取消
+              </span>
+            </div>
+            <div class="actions-right">
+              <button
+                v-if="order.status === 'pending'"
+                class="btn-pay"
+                @click="handlePay"
+              >
+                立即支付
+              </button>
+              <button
+                v-if="order.status === 'pending'"
+                class="btn-cancel"
+                @click="handleCancel"
+              >
+                取消订单
+              </button>
+              <button
+                v-if="order.status === 'shipped'"
+                class="btn-logistics"
+                @click="showLogistics = true"
+              >
+                查看物流
+              </button>
+              <button
+                v-if="order.status === 'shipped'"
+                class="btn-confirm"
+                @click="handleConfirm"
+              >
+                确认收货
+              </button>
+              <router-link
+                v-if="order.status === 'delivered'"
+                to="/user/orders"
+                class="btn-back"
+              >
+                返回订单列表
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 物流弹窗 -->
+      <el-dialog v-model="showLogistics" title="物流信息" width="500px">
+        <div class="logistics-content">
+          <div v-if="logistics.length" class="logistics-timeline">
+            <div
+              v-for="(log, index) in logistics"
+              :key="index"
+              class="logistics-item"
+              :class="{ latest: index === 0 }"
+            >
+              <div class="log-time">{{ log.time }}</div>
+              <div class="log-detail">{{ log.detail }}</div>
+            </div>
+          </div>
+          <div v-else class="no-logistics">
+            <p>暂无物流信息</p>
+          </div>
+        </div>
+      </el-dialog>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useOrderStore } from '@/stores/order'
+import { formatDateTime, formatOrderStatus } from '@/utils/format'
+
+const route = useRoute()
+const router = useRouter()
+const orderStore = useOrderStore()
+
+const loading = ref(true)
+const order = ref(null)
+const showLogistics = ref(false)
+const logistics = ref([])
+
+const statusSteps = computed(() => [
+  { key: 'pending', label: '提交订单', time: order.value?.createTime },
+  { key: 'paid', label: '支付成功', time: order.value?.payTime },
+  { key: 'shipped', label: '商品发货', time: order.value?.shipTime },
+  { key: 'delivered', label: '确认收货', time: order.value?.deliverTime }
+])
+
+const statusOrder = ['pending', 'paid', 'shipped', 'delivered', 'cancelled']
+
+const isStepActive = (stepKey) => {
+  if (order.value?.status === 'cancelled') {
+    return stepKey === 'pending'
+  }
+  const currentIndex = statusOrder.indexOf(order.value?.status)
+  const stepIndex = statusOrder.indexOf(stepKey)
+  return stepIndex === currentIndex
+}
+
+const isStepCompleted = (stepKey) => {
+  if (order.value?.status === 'cancelled') {
+    return false
+  }
+  const currentIndex = statusOrder.indexOf(order.value?.status)
+  const stepIndex = statusOrder.indexOf(stepKey)
+  return stepIndex < currentIndex
+}
+
+const subtotal = computed(() => {
+  if (!order.value?.items) return 0
+  return order.value.items.reduce((sum, item) => {
+    return sum + parseFloat(item.price) * item.quantity
+  }, 0)
+})
+
+const shipping = computed(() => {
+  return subtotal.value >= 99 ? 0 : 10
+})
+
+const total = computed(() => {
+  return subtotal.value + shipping.value
+})
+
+const fetchOrderDetail = async () => {
+  loading.value = true
+  try {
+    const res = await orderStore.getOrderDetail(route.params.id)
+    order.value = res || orderStore.currentOrder
+  } catch (error) {
+    ElMessage.error('获取订单详情失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handlePay = async () => {
+  try {
+    await ElMessageBox.confirm('确认支付该订单？', '支付确认', {
+      confirmButtonText: '确认支付',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await orderStore.payOrder(order.value.id)
+    ElMessage.success('支付成功')
+    fetchOrderDetail()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('支付失败')
+    }
+  }
+}
+
+const handleCancel = async () => {
+  try {
+    await ElMessageBox.confirm('确认取消该订单？', '取消订单', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '保留',
+      type: 'warning'
+    })
+    await orderStore.cancelOrder(order.value.id)
+    ElMessage.success('订单已取消')
+    fetchOrderDetail()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('取消失败')
+    }
+  }
+}
+
+const handleConfirm = async () => {
+  try {
+    await ElMessageBox.confirm('确认已收到商品？', '确认收货', {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'info'
+    })
+    await orderStore.confirmOrder(order.value.id)
+    ElMessage.success('已确认收货')
+    fetchOrderDetail()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('确认失败')
+    }
+  }
+}
+
+onMounted(() => {
+  fetchOrderDetail()
+})
+</script>
+
+<style scoped>
+.order-detail-page {
+  padding: var(--space-8) 0 var(--space-16);
+  min-height: calc(100vh - var(--header-height));
+  background: var(--color-paper);
+}
+
+.page-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-ink);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid var(--color-vermillion);
+}
+
+.detail-loading {
+  padding: var(--space-8) 0;
+}
+
+.skeleton-section {
+  background: var(--color-paper-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-paper-dark) 25%, var(--color-paper-white) 50%, var(--color-paper-dark) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton.title {
+  height: 24px;
+  width: 120px;
+  margin-bottom: var(--space-4);
+}
+
+.skeleton.content {
+  height: 200px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.section {
+  background: var(--color-paper-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Status Progress */
+.status-section {
+  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-light) 100%);
+  color: white;
+}
+
+.status-progress {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+.status-progress::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  flex: 1;
+}
+
+.step-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  transition: all var(--transition-base);
+}
+
+.progress-step.completed .step-indicator {
+  background: var(--color-bamboo);
+}
+
+.progress-step.active .step-indicator {
+  background: var(--color-vermillion);
+  box-shadow: 0 0 0 4px rgba(201, 64, 67, 0.3);
+}
+
+.check-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.step-number {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.step-label {
+  font-size: var(--text-sm);
+}
+
+.step-time {
+  font-size: var(--text-xs);
+  opacity: 0.7;
+  margin-top: var(--space-1);
+}
+
+/* Address */
+.address-card {
+  padding: var(--space-4);
+  background: var(--color-paper);
+  border-radius: var(--radius-md);
+}
+
+.address-header {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.receiver {
+  font-weight: 600;
+}
+
+.phone {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.address-detail {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Order Items */
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-paper);
+  border-radius: var(--radius-md);
+}
+
+.item-cover {
+  width: 60px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.item-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-author {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.item-price {
+  font-family: var(--font-accent);
+  color: var(--color-copper);
+  min-width: 70px;
+}
+
+.item-quantity {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  min-width: 40px;
+  text-align: center;
+}
+
+.item-subtotal {
+  font-family: var(--font-accent);
+  font-weight: 600;
+  color: var(--color-vermillion);
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Summary */
+.summary-content {
+  max-width: 400px;
+  margin-left: auto;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.summary-row .order-no {
+  font-family: var(--font-accent);
+  color: var(--color-ink);
+}
+
+.summary-row.total {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-ink);
+}
+
+.total-amount {
+  font-family: var(--font-accent);
+  font-size: var(--text-xl);
+  color: var(--color-vermillion);
+}
+
+/* Actions */
+.actions-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pay-hint {
+  font-size: var(--text-sm);
+  color: var(--color-vermillion);
+}
+
+.pay-hint strong {
+  font-weight: 600;
+}
+
+.actions-right {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.btn-pay, .btn-cancel, .btn-logistics, .btn-confirm, .btn-back {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-pay {
+  background: var(--color-vermillion);
+  border: none;
+  color: white;
+}
+
+.btn-pay:hover {
+  background: var(--color-vermillion-light);
+}
+
+.btn-cancel {
+  background: var(--color-paper-white);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.btn-cancel:hover {
+  border-color: var(--color-vermillion);
+  color: var(--color-vermillion);
+}
+
+.btn-logistics {
+  background: var(--color-bamboo);
+  border: none;
+  color: white;
+}
+
+.btn-logistics:hover {
+  background: var(--color-bamboo-light);
+}
+
+.btn-confirm {
+  background: var(--color-copper);
+  border: none;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: var(--color-copper-light);
+}
+
+.btn-back {
+  background: var(--color-paper-dark);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.btn-back:hover {
+  border-color: var(--color-copper);
+  color: var(--color-copper);
+}
+
+/* Logistics */
+.logistics-content {
+  padding: var(--space-4);
+}
+
+.logistics-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.logistics-item {
+  display: flex;
+  gap: var(--space-4);
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--color-border);
+}
+
+.logistics-item.latest {
+  border-left-color: var(--color-vermillion);
+}
+
+.log-time {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.log-detail {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.logistics-item.latest .log-detail {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.no-logistics {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .status-progress {
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .status-progress::before {
+    display: none;
+  }
+
+  .progress-step {
+    flex: 0 0 45%;
+  }
+
+  .order-item {
+    flex-wrap: wrap;
+  }
+
+  .item-price,
+  .item-quantity {
+    margin-left: 76px;
+  }
+
+  .item-subtotal {
+    width: 100%;
+    text-align: left;
+    padding-left: 76px;
+  }
+
+  .summary-content {
+    max-width: 100%;
+  }
+
+  .actions-content {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .actions-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .actions-right button,
+  .actions-right a {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+}
+</style>

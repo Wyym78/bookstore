@@ -25,8 +25,7 @@ CREATE TABLE `category` (
     `name` VARCHAR(50) NOT NULL COMMENT '分类名称',
     `parent_id` BIGINT DEFAULT 0 COMMENT '父分类ID（0为顶级）',
     `sort` INT DEFAULT 0 COMMENT '排序',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分类表';
 
 -- 书籍表
@@ -60,7 +59,6 @@ CREATE TABLE `address` (
     `detail_address` VARCHAR(200) NOT NULL COMMENT '详细地址',
     `is_default` TINYINT DEFAULT 0 COMMENT '是否默认',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收货地址表';
 
@@ -71,7 +69,6 @@ CREATE TABLE `cart` (
     `book_id` BIGINT NOT NULL COMMENT '书籍ID',
     `quantity` INT NOT NULL DEFAULT 1 COMMENT '数量',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
     FOREIGN KEY (`book_id`) REFERENCES `book`(`id`),
     UNIQUE KEY `uk_user_book` (`user_id`, `book_id`)
@@ -119,7 +116,6 @@ CREATE TABLE `review` (
     `content` VARCHAR(500) COMMENT '评论内容',
     `status` TINYINT DEFAULT 1 COMMENT '状态（1显示/0隐藏）',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (`user_id`) REFERENCES `user`(`id`),
     FOREIGN KEY (`book_id`) REFERENCES `book`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评论表';
@@ -133,9 +129,9 @@ INSERT INTO `category` (`name`, `parent_id`, `sort`) VALUES
 ('儿童', 0, 4),
 ('历史', 0, 5);
 
--- 插入管理员账号 (密码: 123456，BCrypt加密)
+-- 插入管理员账号 (密码: 123456)
 INSERT INTO `user` (`username`, `password`, `email`, `role`) VALUES
-('admin', '$2a$10$9XvK7P3p16oVN/37HZixyOjCsql5O/LVDQkrkpEvJichxgjTNMGTW', 'admin@bookstore.com', 'admin');
+('admin', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'admin@bookstore.com', 'admin');
 
 -- 插入测试书籍
 INSERT INTO `book` (`isbn`, `title`, `author`, `publisher`, `price`, `stock`, `category_id`, `description`) VALUES

@@ -34,5 +34,10 @@ build/
 ### VS Code ###
 .vscode/
 
+### Frontend ###
+bookstore-frontend/node_modules/
+bookstore-frontend/dist/
+bookstore-frontend/.DS_Store
+
 ### Mac OS ###
 .DS_Store
