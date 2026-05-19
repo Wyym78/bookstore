@@ -42,7 +42,7 @@ mvn spring-boot:run
 
 访问 http://localhost:8081
 
-**管理员账号：** admin / 123456（SHA-256加密）
+**管理员账号：** 用户名 `admin`，密码 `123456`（BCrypt加密）
 
 ## 项目结构
 

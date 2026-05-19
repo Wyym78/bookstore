@@ -2,6 +2,7 @@ package com.example.bookstore.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.bookstore.common.Constants;
 import com.example.bookstore.common.Result;
 import com.example.bookstore.entity.Order;
 import com.example.bookstore.mapper.OrderMapper;
@@ -39,7 +40,10 @@ public class OrderManageController {
         if (order == null) {
             return Result.error(1, "订单不存在");
         }
-        order.setStatus("shipped");
+        if (!Constants.ORDER_STATUS_PAID.equals(order.getStatus())) {
+            return Result.error(1, "订单状态不允许发货");
+        }
+        order.setStatus(Constants.ORDER_STATUS_SHIPPED);
         orderMapper.updateById(order);
         return Result.success();
     }
@@ -50,7 +54,10 @@ public class OrderManageController {
         if (order == null) {
             return Result.error(1, "订单不存在");
         }
-        order.setStatus("delivered");
+        if (!Constants.ORDER_STATUS_SHIPPED.equals(order.getStatus())) {
+            return Result.error(1, "订单状态不允许收货");
+        }
+        order.setStatus(Constants.ORDER_STATUS_DELIVERED);
         orderMapper.updateById(order);
         return Result.success();
     }

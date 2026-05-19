@@ -42,7 +42,7 @@ mysql -u root -p < sql/init.sql
 
 将创建包含8张表的数据库 `bookstore`：`user`、`category`、`book`、`address`、`cart`、`order`、`order_item`、`review`。
 
-**默认管理员账号：** 用户名 `admin`，密码 `123456`（SHA-1加密）
+**默认管理员账号：** 用户名 `admin`，密码 `123456`（BCrypt加密）
 
 ## 项目架构
 
@@ -79,6 +79,14 @@ com.example.bookstore/
 - 数据库：**localhost:3306/bookstore**
 - MyBatis-Plus XML映射：`classpath:mapper/*.xml`
 - CORS已配置允许前端开发服务器（如 localhost:5173）访问
+- JWT配置：`jwt.secret`（密钥）和 `jwt.expiration`（有效期24小时）
+
+### 认证与授权
+
+- `AuthInterceptor` 拦截 `/api/` 请求验证 JWT Token
+- `AdminInterceptor` 拦截 `/admin/` 请求验证管理员角色
+- `AuthContext` 使用 ThreadLocal 存储当前用户信息
+- 密码使用 `BCryptPasswordEncoder` 加密，不可逆
 
 ### 数据库表结构
 
@@ -104,7 +112,7 @@ com.example.bookstore/
 - `BookstoreApplication` 使用 `@MapperScan("com.example.bookstore.mapper")` 自动扫描Mapper
 - 管理员接口位于 `/admin/` 路径下
 - SQL中 `order` 表名需用反引号包裹（保留字）
-- 密码使用SHA-256加密（见 `SecurityUtils`）
+- 密码使用BCrypt加密（见 `SecurityUtils`），密钥从 `application.yml` 的 `jwt.secret` 读取
 - 订单号通过 `OrderNoGenerator` 工具类生成
 
 ## 文档位置

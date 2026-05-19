@@ -19,6 +19,7 @@ import java.util.Map;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final UserMapper userMapper;
+    private final JwtUtils jwtUtils;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -34,13 +35,13 @@ public class AuthInterceptor implements HandlerInterceptor {
             token = token.substring(7);
         }
 
-        if (JwtUtils.isTokenExpired(token)) {
+        if (jwtUtils.isTokenExpired(token)) {
             sendUnauthorized(response, "Token已过期");
             return false;
         }
 
-        Long userId = JwtUtils.getUserId(token);
-        String role = JwtUtils.getRole(token);
+        Long userId = jwtUtils.getUserId(token);
+        String role = jwtUtils.getRole(token);
 
         User user = userMapper.selectById(userId);
         if (user == null) {

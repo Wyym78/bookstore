@@ -19,6 +19,10 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+jwt:
+  secret: "bookstore-secret-key-for-jwt-token-generation-2024"
+  expiration: 86400000
+
 logging:
   level:
     com.example.bookstore: debug

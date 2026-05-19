@@ -1,8 +1,10 @@
 package com.example.bookstore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Category;
 import com.example.bookstore.exception.BusinessException;
+import com.example.bookstore.mapper.BookMapper;
 import com.example.bookstore.mapper.CategoryMapper;
 import com.example.bookstore.service.CategoryService;
 import com.example.bookstore.vo.CategoryVO;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryMapper categoryMapper;
+    private final BookMapper bookMapper;
 
     @Override
     public List<CategoryVO> getAll() {
@@ -54,11 +57,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(Long id) {
-        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Category::getParentId, id);
-        if (categoryMapper.selectCount(wrapper) > 0) {
+        LambdaQueryWrapper<Category> childWrapper = new LambdaQueryWrapper<>();
+        childWrapper.eq(Category::getParentId, id);
+        if (categoryMapper.selectCount(childWrapper) > 0) {
             throw new BusinessException(1, "存在子分类，无法删除");
         }
+
+        LambdaQueryWrapper<Book> bookWrapper = new LambdaQueryWrapper<>();
+        bookWrapper.eq(Book::getCategoryId, id);
+        if (bookMapper.selectCount(bookWrapper) > 0) {
+            throw new BusinessException(1, "该分类下存在书籍，无法删除");
+        }
+
         categoryMapper.deleteById(id);
     }
 

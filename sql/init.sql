@@ -129,9 +129,9 @@ INSERT INTO `category` (`name`, `parent_id`, `sort`) VALUES
 ('儿童', 0, 4),
 ('历史', 0, 5);
 
--- 插入管理员账号 (密码: 123456)
+-- 插入管理员账号 (密码: 123456，BCrypt加密)
 INSERT INTO `user` (`username`, `password`, `email`, `role`) VALUES
-('admin', 'ef797c8118f02dfb649607dd5d3f8d762e4e9c1f2f2a5a5a5a5a5a5a5a5a5a5a5', 'admin@bookstore.com', 'admin');
+('admin', '$2a$10$9XvK7P3p16oVN/37HZixyOjCsql5O/LVDQkrkpEvJichxgjTNMGTW', 'admin@bookstore.com', 'admin');
 
 -- 插入测试书籍
 INSERT INTO `book` (`isbn`, `title`, `author`, `publisher`, `price`, `stock`, `category_id`, `description`) VALUES

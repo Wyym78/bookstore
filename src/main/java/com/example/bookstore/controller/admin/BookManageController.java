@@ -1,8 +1,14 @@
 package com.example.bookstore.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.bookstore.common.Result;
 import com.example.bookstore.entity.Book;
+import com.example.bookstore.entity.OrderItem;
+import com.example.bookstore.entity.Review;
 import com.example.bookstore.mapper.BookMapper;
+import com.example.bookstore.mapper.OrderItemMapper;
+import com.example.bookstore.mapper.ReviewMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,22 +18,36 @@ import org.springframework.web.bind.annotation.*;
 public class BookManageController {
 
     private final BookMapper bookMapper;
+    private final ReviewMapper reviewMapper;
+    private final OrderItemMapper orderItemMapper;
 
     @PostMapping("/add")
-    public Result<Void> add(@RequestBody Book book) {
+    public Result<Void> add(@Valid @RequestBody Book book) {
         book.setStatus(1);
         bookMapper.insert(book);
         return Result.success();
     }
 
     @PutMapping("/update")
-    public Result<Void> update(@RequestBody Book book) {
+    public Result<Void> update(@Valid @RequestBody Book book) {
         bookMapper.updateById(book);
         return Result.success();
     }
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
+        LambdaQueryWrapper<Review> reviewWrapper = new LambdaQueryWrapper<>();
+        reviewWrapper.eq(Review::getBookId, id);
+        if (reviewMapper.selectCount(reviewWrapper) > 0) {
+            return Result.error(1, "该书籍下存在评论，无法删除");
+        }
+
+        LambdaQueryWrapper<OrderItem> orderItemWrapper = new LambdaQueryWrapper<>();
+        orderItemWrapper.eq(OrderItem::getBookId, id);
+        if (orderItemMapper.selectCount(orderItemWrapper) > 0) {
+            return Result.error(1, "该书籍存在订单记录，无法删除");
+        }
+
         bookMapper.deleteById(id);
         return Result.success();
     }

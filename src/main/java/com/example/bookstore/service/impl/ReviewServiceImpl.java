@@ -10,6 +10,7 @@ import com.example.bookstore.mapper.BookMapper;
 import com.example.bookstore.mapper.ReviewMapper;
 import com.example.bookstore.mapper.UserMapper;
 import com.example.bookstore.service.ReviewService;
+import com.example.bookstore.util.AuthContext;
 import com.example.bookstore.vo.ReviewVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             throw new BusinessException(1, "评论不存在");
         }
-        if (!review.getUserId().equals(userId)) {
+        if (!review.getUserId().equals(userId) && !Constants.ROLE_ADMIN.equals(AuthContext.getCurrentUserRole())) {
             throw new BusinessException(1, "无权删除此评论");
         }
         reviewMapper.deleteById(reviewId);

@@ -21,6 +21,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterDTO registerDTO) {
@@ -32,7 +33,7 @@ public class UserController {
     public Result<Map<String, String>> login(@Valid @RequestBody LoginDTO loginDTO) {
         String username = userService.login(loginDTO);
         User user = userService.getUserByUsername(username);
-        String token = JwtUtils.generateToken(user.getId(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getRole());
         return Result.success(Map.of("token", token, "username", username));
     }
 
